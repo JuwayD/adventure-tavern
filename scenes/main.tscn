@@ -1,0 +1,289 @@
+[gd_scene format=3 uid="uid://du0lleympdj8v"]
+
+[ext_resource type="Script" uid="uid://bfy5n6na5ptnl" path="res://scripts/tavern_floor.gd" id="1_tavern"]
+[ext_resource type="Script" uid="uid://4ac5kyo8agvw" path="res://scripts/ui_manager.gd" id="2_ui"]
+[ext_resource type="Script" uid="uid://17w3i8put01y" path="res://scripts/game_manager.gd" id="3_game"]
+[ext_resource type="Script" uid="uid://bfakarsctet08" path="res://scripts/audio_manager.gd" id="4_audio"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.15, 0.1, 0.05, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.3, 0.2, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_cancel"]
+bg_color = Color(0.5, 0.2, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.7, 0.3, 0.3, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_normal"]
+bg_color = Color(0.3, 0.2, 0.15, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.5, 0.35, 0.2, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_panel"]
+bg_color = Color(0.1, 0.08, 0.05, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.6, 0.5, 0.3, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_guest_detail"]
+bg_color = Color(0.12, 0.08, 0.04, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.6, 0.4, 0.2, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="Main" type="Node2D" unique_id=1573225989]
+script = ExtResource("1_tavern")
+
+[node name="GameManager" type="Node" parent="." unique_id=1713004855]
+script = ExtResource("3_game")
+
+[node name="AudioManager" type="Node" parent="." unique_id=517594691]
+script = ExtResource("4_audio")
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=805223181]
+script = ExtResource("2_ui")
+
+[node name="ResourcePanel" type="PanelContainer" parent="UI" unique_id=2128395647]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 280.0
+offset_bottom = 180.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="UI/ResourcePanel" unique_id=874467374]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="UI/ResourcePanel/VBox" unique_id=694988789]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.7, 0.4, 1)
+theme_override_font_sizes/font_size = 18
+text = "资源"
+
+[node name="GoldValue" type="Label" parent="UI/ResourcePanel/VBox" unique_id=1794081155]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "100"
+
+[node name="IngValue" type="Label" parent="UI/ResourcePanel/VBox" unique_id=1445146864]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.9, 0.4, 1)
+theme_override_font_sizes/font_size = 16
+text = "20"
+
+[node name="RepValue" type="Label" parent="UI/ResourcePanel/VBox" unique_id=22802749]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.7, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "50"
+
+[node name="FuelValue" type="Label" parent="UI/ResourcePanel/VBox" unique_id=1568704052]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.5, 0.3, 1)
+theme_override_font_sizes/font_size = 16
+text = "10"
+
+[node name="DayLabel" type="Label" parent="UI" unique_id=1373961732]
+offset_left = 20.0
+offset_top = 195.0
+offset_right = 200.0
+offset_bottom = 225.0
+theme_override_colors/font_color = Color(0.9, 0.8, 0.6, 1)
+theme_override_font_sizes/font_size = 20
+text = "第 1 天"
+
+[node name="MessageLabel" type="Label" parent="UI" unique_id=468147567]
+offset_top = 20.0
+offset_bottom = 50.0
+theme_override_colors/font_color = Color(1, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+
+[node name="EventPanel" type="PanelContainer" parent="UI" unique_id=255489316]
+offset_left = 413.0
+offset_top = 474.0
+offset_right = 813.0
+offset_bottom = 574.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="EventLabel" type="Label" parent="UI/EventPanel" unique_id=1457723681]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.7, 1)
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BuildPanel" type="VBoxContainer" parent="UI" unique_id=507896644]
+offset_left = 900.0
+offset_top = 20.0
+offset_right = 1260.0
+offset_bottom = 450.0
+
+[node name="BuildTitle" type="Label" parent="UI/BuildPanel" unique_id=1891116987]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.7, 0.4, 1)
+theme_override_font_sizes/font_size = 18
+text = "建造设施"
+
+[node name="Table" type="Button" parent="UI/BuildPanel" unique_id=105282466]
+layout_mode = 2
+text = "餐桌 (20金)"
+
+[node name="Barrel" type="Button" parent="UI/BuildPanel" unique_id=118626890]
+layout_mode = 2
+text = "酒桶 (30金)"
+
+[node name="Fireplace" type="Button" parent="UI/BuildPanel" unique_id=1979279620]
+layout_mode = 2
+text = "壁炉 (50金)"
+
+[node name="Kitchen" type="Button" parent="UI/BuildPanel" unique_id=409424297]
+layout_mode = 2
+text = "厨房 (100金)"
+
+[node name="Bedroom" type="Button" parent="UI/BuildPanel" unique_id=1329175794]
+layout_mode = 2
+text = "客房 (80金)"
+
+[node name="CancelBuild" type="Button" parent="UI/BuildPanel" unique_id=713776128]
+visible = false
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_cancel")
+text = "取消建造"
+
+[node name="Spacer" type="Control" parent="UI/BuildPanel" unique_id=728588575]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SaveLoadLabel" type="Label" parent="UI/BuildPanel" unique_id=609538278]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.7, 0.4, 1)
+theme_override_font_sizes/font_size = 14
+text = "存档管理"
+
+[node name="SaveButton" type="Button" parent="UI/BuildPanel" unique_id=901451944]
+layout_mode = 2
+text = "💾 保存游戏"
+
+[node name="LoadButton" type="Button" parent="UI/BuildPanel" unique_id=60332874]
+layout_mode = 2
+text = "📂 读取游戏"
+
+[node name="NextDayButton" type="Button" parent="UI" unique_id=1135190534]
+offset_left = 1100.0
+offset_top = 620.0
+offset_right = 1260.0
+offset_bottom = 680.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+text = "下一天"
+
+[node name="GuestPanel" type="PanelContainer" parent="UI" unique_id=1946482606]
+offset_left = 20.0
+offset_top = 240.0
+offset_right = 280.0
+offset_bottom = 500.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="TitleLabel" type="Label" parent="UI/GuestPanel" unique_id=1405771606]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.7, 0.4, 1)
+theme_override_font_sizes/font_size = 16
+text = "当前客人"
+
+[node name="GuestList" type="ItemList" parent="UI/GuestPanel" unique_id=424817674]
+layout_mode = 2
+
+[node name="CardPanel" type="PanelContainer" parent="UI" unique_id=2057550766]
+offset_left = 231.0
+offset_top = 162.0
+offset_right = 1031.0
+offset_bottom = 562.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_panel")
+
+[node name="CardTitle" type="Label" parent="UI/CardPanel" unique_id=965699648]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.7, 0.4, 1)
+theme_override_font_sizes/font_size = 24
+text = "选择一张卡牌"
+horizontal_alignment = 1
+
+[node name="GuestDetailPanel" type="PanelContainer" parent="UI" unique_id=1640876015]
+anchors_preset = -1
+anchor_left = 0.102000006
+anchor_top = 0.84900004
+anchor_right = 0.102000006
+anchor_bottom = 0.84900004
+offset_left = -95.56001
+offset_top = -48.28003
+offset_right = 96.43999
+offset_bottom = 47.71997
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_guest_detail")
+
+[node name="GuestTypeLabel" type="Label" parent="UI/GuestDetailPanel" unique_id=983550392]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.7, 0.4, 1)
+theme_override_font_sizes/font_size = 18
+text = "类型: "
+
+[node name="OrderLabel" type="Label" parent="UI/GuestDetailPanel" unique_id=1836306665]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 16
+text = "订单:"
+
+[node name="ServeButton" type="Button" parent="UI/GuestDetailPanel" unique_id=2076460592]
+layout_mode = 2
+text = "提供服务"
+
+[node name="CloseDetailButton" type="Button" parent="UI/GuestDetailPanel" unique_id=215259932]
+layout_mode = 2
+text = "关闭"
+
+[connection signal="next_day_requested" from="UI" to="." method="advance_day"]
+[connection signal="pressed" from="UI/BuildPanel/Table" to="UI" method="_on_table_pressed"]
+[connection signal="pressed" from="UI/BuildPanel/Barrel" to="UI" method="_on_barrel_pressed"]
+[connection signal="pressed" from="UI/BuildPanel/Fireplace" to="UI" method="_on_fireplace_pressed"]
+[connection signal="pressed" from="UI/BuildPanel/Kitchen" to="UI" method="_on_kitchen_pressed"]
+[connection signal="pressed" from="UI/BuildPanel/Bedroom" to="UI" method="_on_bedroom_pressed"]
+[connection signal="pressed" from="UI/BuildPanel/CancelBuild" to="UI" method="_on_cancel_build_pressed"]
+[connection signal="pressed" from="UI/BuildPanel/SaveButton" to="UI" method="_on_save_button_pressed"]
+[connection signal="pressed" from="UI/BuildPanel/LoadButton" to="UI" method="_on_load_button_pressed"]
+[connection signal="pressed" from="UI/NextDayButton" to="UI" method="_on_next_day_pressed"]
+[connection signal="pressed" from="UI/GuestDetailPanel/ServeButton" to="UI" method="_on_serve_button_pressed"]
+[connection signal="pressed" from="UI/GuestDetailPanel/CloseDetailButton" to="UI" method="_on_close_guest_detail_pressed"]

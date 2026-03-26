@@ -1,0 +1,28 @@
+# Godot-specific
+.godot/
+*.import
+export.cfg
+export_presets.cfg
+
+# Build output
+build/
+*.pck
+*.exe
+*.dll
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# User-specific
+*.user
+*.user.cfg
