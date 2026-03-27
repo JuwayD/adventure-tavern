@@ -43,6 +43,9 @@ var build_mode: bool = false
 var selected_facility: String = ""
 var hovered_cell: Vector2i = Vector2i(-1, -1)
 
+# Tutorial reference
+var tutorial: Node = null
+
 # 肉鸽卡牌定义
 const ROGUELIKE_CARDS: Array = [
 	# Common - 资源获取
@@ -150,6 +153,7 @@ const FACILITY_INCOME: Dictionary = {
 }
 
 func _ready() -> void:
+	tutorial = get_node_or_null("/root/Main/TutorialManager")
 	_initialize_grid()
 	_update_ui()
 
@@ -161,6 +165,8 @@ func _initialize_grid() -> void:
 	_facility_place(5, 3, "barrel")
 	_facility_place(3, 5, "table")
 	_facility_place(6, 5, "table")
+	print("[DEBUG] After init - facility_types: ", facility_types)
+	print("[DEBUG] Keys type: ", typeof(facility_types.keys()[0]) if facility_types.size() > 0 else "empty")
 
 func _facility_place(col: int, row: int, facility_type: String) -> bool:
 	if col < 0 or col >= GRID_COLS or row < 0 or row >= GRID_ROWS:
@@ -194,10 +200,29 @@ func build_facility(col: int, row: int, facility_type: String) -> bool:
 	_update_ui()
 	emit_signal("resource_changed", "gold", gold, gold + cost)
 	
+	# Notify tutorial that facility was placed
+	if tutorial and tutorial.has_method("notify_facility_placed"):
+		tutorial.notify_facility_placed()
+	
 	# 播放建造音效
 	var audio: Node = get_node_or_null("/root/Main/AudioManager")
 	if audio and audio.has_method("play_sfx"):
 		audio.play_sfx("build")
+	
+	# 更新设施建造成就
+	var achievements: Node = get_node_or_null("/root/Main/AchievementManager")
+	if achievements and achievements.has_method("increment_stat"):
+		match facility_type:
+			"table":
+				achievements.increment_stat("tables_built")
+			"barrel":
+				achievements.increment_stat("barrels_built")
+			"fireplace":
+				achievements.increment_stat("fireplaces_built")
+			"kitchen":
+				achievements.increment_stat("kitchens_built")
+			"bedroom":
+				achievements.increment_stat("guestrooms_built")
 	
 	return true
 
@@ -274,63 +299,74 @@ func _handle_guest_click(mouse_pos: Vector2) -> void:
 		var guest_center: Vector2 = guest_pos + Vector2(GRID_SIZE / 2, GRID_SIZE / 2)
 		if mouse_pos.distance_to(guest_center) < 24:
 			emit_signal("guest_clicked", guest["id"])
+			# Notify tutorial
+			if tutorial and tutorial.has_method("notify_guest_clicked"):
+				tutorial.notify_guest_clicked()
 			return
 
 func _process(_delta: float) -> void:
 	queue_redraw()
 
+# 网格偏移 - 避开左上角 UI 面板
+const GRID_OFFSET_X: int = 300
+const GRID_OFFSET_Y: int = 200
+
 func _draw() -> void:
-	# 绘制网格背景
+	# 1. 绘制网格背景（带偏移）
 	for row in range(GRID_ROWS):
 		for col in range(GRID_COLS):
-			var cell_pos: Vector2 = Vector2(col * GRID_SIZE, row * GRID_SIZE)
+			var cell_pos: Vector2 = Vector2(col * GRID_SIZE + GRID_OFFSET_X, row * GRID_SIZE + GRID_OFFSET_Y)
 			var cell_rect: Rect2 = Rect2(cell_pos, Vector2(GRID_SIZE, GRID_SIZE))
 			
-			var grid_color: Color = Color(0.2, 0.15, 0.1) if (row + col) % 2 == 0 else Color(0.25, 0.18, 0.12)
+			var grid_color: Color = Color(0.35, 0.28, 0.2) if (row + col) % 2 == 0 else Color(0.42, 0.33, 0.24)
 			draw_rect(cell_rect, grid_color)
-			draw_rect(cell_rect, Color(0.1, 0.08, 0.05), false, 1.0)
+			draw_rect(cell_rect, Color(0.2, 0.15, 0.1), false, 2.0)
 	
-	# 建造模式：显示可放置位置
+	# 2. 建造模式：显示可放置位置（带偏移）
 	if build_mode:
 		for row in range(GRID_ROWS):
 			for col in range(GRID_COLS):
 				if can_build_at(col, row):
-					var cell_pos: Vector2 = Vector2(col * GRID_SIZE, row * GRID_SIZE)
+					var cell_pos: Vector2 = Vector2(col * GRID_SIZE + GRID_OFFSET_X, row * GRID_SIZE + GRID_OFFSET_Y)
 					var cell_rect: Rect2 = Rect2(cell_pos, Vector2(GRID_SIZE, GRID_SIZE))
-					# 有效位置高亮
 					if hovered_cell.x == col and hovered_cell.y == row:
 						draw_rect(cell_rect, Color(0.3, 0.8, 0.3, 0.5))
 					else:
 						draw_rect(cell_rect, Color(0.3, 0.6, 0.3, 0.3))
 	
-	# 绘制设施
-	for idx in facility_types.keys():
-		var col: int = idx % GRID_COLS
-		var row: int = idx / GRID_COLS
-		var cell_pos: Vector2 = Vector2(col * GRID_SIZE, row * GRID_SIZE)
+	# 3. 绘制设施（带偏移）
+	for idx in facility_types:
+		var col: int = int(idx) % GRID_COLS
+		var row: int = int(int(idx) / GRID_COLS)
+		var cell_pos: Vector2 = Vector2(col * GRID_SIZE + GRID_OFFSET_X, row * GRID_SIZE + GRID_OFFSET_Y)
 		var facility_type: String = facility_types[idx]
-		
 		_draw_facility(cell_pos, facility_type)
 	
-	# 绘制客人
+	# 绘制客人（带偏移）
 	for guest in active_guests:
-		var guest_pos: Vector2 = guest.get("position", Vector2.ZERO)
+		var guest_pos: Vector2 = guest.get("position", Vector2.ZERO) + Vector2(GRID_OFFSET_X, GRID_OFFSET_Y)
 		_draw_guest(guest_pos, guest.get("type", "common"))
 
 func _draw_facility(pos: Vector2, facility_type: String) -> void:
 	var rect: Rect2 = Rect2(pos + Vector2(4, 4), Vector2(GRID_SIZE - 8, GRID_SIZE - 8))
 	match facility_type:
 		"table":
-			draw_rect(rect, Color(0.6, 0.4, 0.2))
-			draw_rect(rect, Color(0.4, 0.25, 0.1), false, 2.0)
+			# 餐桌 - 亮橙色
+			draw_rect(rect, Color(0.85, 0.55, 0.25))
+			draw_rect(rect, Color(0.5, 0.3, 0.15), false, 3.0)
 		"barrel":
-			draw_circle(pos + Vector2(GRID_SIZE/2, GRID_SIZE/2), GRID_SIZE/2 - 8, Color(0.5, 0.3, 0.15))
-			draw_circle(pos + Vector2(GRID_SIZE/2, GRID_SIZE/2), GRID_SIZE/2 - 12, Color(0.6, 0.35, 0.2))
+			# 酒桶 - 深棕色
+			draw_circle(pos + Vector2(GRID_SIZE/2, GRID_SIZE/2), GRID_SIZE/2 - 8, Color(0.65, 0.35, 0.15))
+			draw_circle(pos + Vector2(GRID_SIZE/2, GRID_SIZE/2), GRID_SIZE/2 - 12, Color(0.75, 0.4, 0.2))
 		"fireplace":
-			draw_rect(rect, Color(0.3, 0.2, 0.1))
-			draw_rect(Rect2(pos + Vector2(12, 10), Vector2(40, 30)), Color(1.0, 0.4, 0.1))
-			draw_rect(Rect2(pos + Vector2(16, 16), Vector2(32, 24)), Color(1.0, 0.7, 0.2))
+			# 壁炉 - 石灰色
+			draw_rect(rect, Color(0.5, 0.45, 0.4))
 		"kitchen":
+			# 厨房 - 深灰色
+			draw_rect(rect, Color(0.4, 0.4, 0.4))
+		"bedroom":
+			# 客房 - 蓝色
+			draw_rect(rect, Color(0.3, 0.4, 0.7))
 			draw_rect(rect, Color(0.4, 0.4, 0.45))
 			draw_rect(Rect2(pos + Vector2(8, 8), Vector2(20, 20)), Color(0.8, 0.8, 0.8))
 		"bedroom":
@@ -484,6 +520,16 @@ func serve_guest_all(guest_id: int) -> Dictionary:
 	# 保存原始订单项数（结算时用，因为 order 已被清空）
 	guest["_served_order_items"] = order_items
 	
+	# 员工效果：厨师减少食材消耗（退还部分食材）
+	var staff_mgr: Node = get_node_or_null("/root/Main/StaffManager")
+	if staff_mgr and staff_mgr.has_method("get_ingredient_cost_mult"):
+		var mult: float = staff_mgr.get_ingredient_cost_mult()
+		if mult < 1.0:
+			var refund: int = int(total_ingredient_cost * (1.0 - mult))
+			if refund > 0:
+				ingredients += refund
+				_update_ui()
+	
 	return {
 		"success": true,
 		"items": items_served,
@@ -521,6 +567,11 @@ func _calculate_payment(guest: Dictionary) -> int:
 	if kitchen_upgrade_days > 0:
 		kitchen_mult *= 2.0
 	
+	# 员工加成：厨师额外+50%厨房产出
+	var staff_mgr: Node = get_node_or_null("/root/Main/StaffManager")
+	if staff_mgr and staff_mgr.has_method("get_kitchen_boost_mult"):
+		kitchen_mult *= staff_mgr.get_kitchen_boost_mult()
+	
 	# 基础收入（食物受厨房产出加成影响）
 	var base_income: int = order_items * 8  # 每项订单基础8金
 	
@@ -535,6 +586,11 @@ func _calculate_payment(guest: Dictionary) -> int:
 			type_mult = 1.4
 		_:
 			type_mult = 1.0
+	
+	# 员工加成：调酒师提升酒水收入
+	if staff_mgr and staff_mgr.has_method("get_drink_boost_mult"):
+		# 调酒师加成在酒水部分体现，这里简单乘以平均加成
+		type_mult *= staff_mgr.get_drink_boost_mult()
 	
 	# 订单完成额外奖励
 	var completion_bonus: int = 0
@@ -552,7 +608,14 @@ func _calculate_payment(guest: Dictionary) -> int:
 	if legendary_boost_days > 0:
 		legendary_mult = 1.5
 	
-	var payment: int = int((base_income * type_mult * kitchen_mult) + completion_bonus + facility_bonus) * legendary_mult
+	# 员工加成：服务员提升小费
+	var satisfaction_boost: float = 0.0
+	if staff_mgr and staff_mgr.has_method("get_guest_satisfaction_boost"):
+		satisfaction_boost = staff_mgr.get_guest_satisfaction_boost()
+	
+	var payment: int = int(((base_income * type_mult * kitchen_mult) + completion_bonus + facility_bonus) * legendary_mult)
+	# 服务员满意度加成（增加小费）
+	payment = int(payment * (1.0 + satisfaction_boost))
 	return maxi(1, payment)
 
 func advance_day() -> void:
@@ -589,6 +652,11 @@ func advance_day() -> void:
 		daily_ingredient_cost = 0
 		golden_age_days -= 1
 	
+	# 员工效果：厨师减少食材消耗
+	var staff_mgr: Node = get_node_or_null("/root/Main/StaffManager")
+	if staff_mgr and staff_mgr.has_method("get_ingredient_cost_mult"):
+		daily_ingredient_cost = int(daily_ingredient_cost * staff_mgr.get_ingredient_cost_mult())
+	
 	fuel = maxi(0, fuel - daily_fuel_cost)
 	ingredients = maxi(0, ingredients - daily_ingredient_cost)
 	
@@ -615,8 +683,13 @@ func advance_day() -> void:
 	# 厨房产出加成已移至 _calculate_payment
 	# 客房加成也已移至 _calculate_payment
 	
-	# 总收入 = 设施加成 - 维护费
+	# 总收入 = 设施加成 - 维护费 - 员工维护费
 	income_today = facility_bonus - facility_maintenance
+	
+	# 员工每日维护费
+	if staff_mgr and staff_mgr.has_method("process_daily_upkeep"):
+		var staff_upkeep: int = staff_mgr.process_daily_upkeep(self)
+		income_today -= staff_upkeep
 	
 	# 传奇酒馆加成（仅影响设施加成部分）
 	if legendary_boost_days > 0:
@@ -626,6 +699,11 @@ func advance_day() -> void:
 	
 	# 触发随机事件
 	_trigger_random_event()
+	
+	# 员工每日效果（服务员声誉加成）
+	staff_mgr = get_node_or_null("/root/Main/StaffManager")
+	if staff_mgr and staff_mgr.has_method("apply_daily_effects"):
+		staff_mgr.apply_daily_effects(self)
 	
 	# 清空当前客人
 	for guest in active_guests:
@@ -718,6 +796,20 @@ func save_game(path: String = "user://save_game.dat") -> bool:
 		"facility_types": facility_types
 	}
 	
+	# 保存成就数据
+	var achievements: Node = get_node_or_null("/root/Main/AchievementManager")
+	if achievements and achievements.has_method("get_save_data"):
+		save_data["achievements"] = achievements.get_save_data()
+	
+	# 保存员工数据
+	var staff_mgr: Node = get_node_or_null("/root/Main/StaffManager")
+	if staff_mgr and staff_mgr.has_method("get_save_data"):
+		save_data["staff"] = staff_mgr.get_save_data()
+	
+	# 保存教程数据
+	if tutorial and tutorial.has_method("save_tutorial_data"):
+		save_data["tutorial"] = tutorial.save_tutorial_data()
+	
 	var save_file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
 	if save_file == null:
 		push_error("Failed to open save file: " + path)
@@ -765,6 +857,20 @@ func load_game(path: String = "user://save_game.dat") -> bool:
 	facility_grid = save_data.get("facility_grid", [])
 	facility_types = save_data.get("facility_types", {})
 	
+	# 加载成就数据
+	var achievements: Node = get_node_or_null("/root/Main/AchievementManager")
+	if achievements and achievements.has_method("load_save_data") and save_data.has("achievements"):
+		achievements.load_save_data(save_data["achievements"])
+	
+	# 加载员工数据
+	var staff_mgr: Node = get_node_or_null("/root/Main/StaffManager")
+	if staff_mgr and staff_mgr.has_method("load_save_data") and save_data.has("staff"):
+		staff_mgr.load_save_data(save_data["staff"])
+	
+	# 加载教程数据
+	if tutorial and tutorial.has_method("load_tutorial_data") and save_data.has("tutorial"):
+		tutorial.load_tutorial_data(save_data["tutorial"])
+	
 	# 清空现有客人
 	active_guests.clear()
 	
@@ -776,3 +882,76 @@ func load_game(path: String = "user://save_game.dat") -> bool:
 	_update_ui()
 	print("[Save] Game loaded from: " + path)
 	return true
+
+# ===== 标题画面/游戏结束信号处理 =====
+func _on_title_new_game() -> void:
+	"""从标题画面开始新游戏"""
+	# 重置所有游戏状态
+	gold = 100
+	reputation = 50
+	ingredients = 20
+	fuel = 10
+	current_day = 1
+	guests_served_today = 0
+	income_today = 0
+	legendary_boost_days = 0
+	golden_age_days = 0
+	kitchen_upgrade_days = 0
+	build_mode = false
+	selected_facility = ""
+	hovered_cell = Vector2i(-1, -1)
+	
+	# 重新初始化网格（保留初始设施）
+	_initialize_grid()
+	
+	# 清空客人
+	active_guests.clear()
+	
+	# 生成初始客人
+	for i in range(3):
+		await get_tree().create_timer(0.5).timeout
+		spawn_guest()
+	
+	_update_ui()
+	
+	# 通知成就系统重置
+	var achievements: Node = get_node_or_null("/root/Main/AchievementManager")
+	if achievements and achievements.has_method("reset_progress"):
+		achievements.reset_progress()
+	
+	# 通知员工系统重置
+	var staff_mgr: Node = get_node_or_null("/root/Main/StaffManager")
+	if staff_mgr and staff_mgr.has_method("reset_progress"):
+		staff_mgr.reset_progress()
+	
+	# 重置教程进度
+	if tutorial and tutorial.has_method("reset_tutorial"):
+		tutorial.reset_tutorial()
+	
+	# 播放背景音乐
+	var audio: Node = get_node_or_null("/root/Main/AudioManager")
+	if audio and audio.has_method("play_bgm"):
+		audio.play_bgm("tavern")
+	
+	print("[Game] New game started")
+
+func _on_title_load_game() -> void:
+	"""从标题画面加载游戏"""
+	var loaded: bool = await load_game()
+	if loaded:
+		print("[Game] Game loaded from title screen")
+	else:
+		# 加载失败，提示并开始新游戏
+		push_warning("No save file found, starting new game")
+		_on_title_new_game()
+
+func _on_game_over_restart() -> void:
+	"""重新开始游戏"""
+	_on_title_new_game()
+
+func _on_game_over_quit() -> void:
+	"""返回标题画面"""
+	# 显示标题画面
+	var title_screen: Node = get_node_or_null("/root/Main/TitleScreen")
+	if title_screen and title_screen.has_method("show_title"):
+		title_screen.show_title()

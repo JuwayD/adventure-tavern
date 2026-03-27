@@ -4,6 +4,12 @@
 [ext_resource type="Script" uid="uid://4ac5kyo8agvw" path="res://scripts/ui_manager.gd" id="2_ui"]
 [ext_resource type="Script" uid="uid://17w3i8put01y" path="res://scripts/game_manager.gd" id="3_game"]
 [ext_resource type="Script" uid="uid://bfakarsctet08" path="res://scripts/audio_manager.gd" id="4_audio"]
+[ext_resource type="Script" uid="uid://sjmj51nk3xf3" path="res://scripts/achievement_manager.gd" id="5_ach"]
+[ext_resource type="Script" uid="uid://ppkqnp60762y" path="res://scripts/title_screen.gd" id="6_title"]
+[ext_resource type="Script" uid="uid://dyxne5g88ae6x" path="res://scripts/game_over_screen.gd" id="7_gameover"]
+[ext_resource type="Script" uid="uid://drff3ekhv0gul" path="res://scripts/staff_manager.gd" id="8_staff"]
+[ext_resource type="Script" path="res://scripts/tutorial_manager.gd" id="9_tutorial"]
+
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.15, 0.1, 0.05, 0.9)
@@ -68,13 +74,142 @@ corner_radius_bottom_left = 10
 [node name="Main" type="Node2D" unique_id=1573225989]
 script = ExtResource("1_tavern")
 
+[node name="TitleScreen" type="CanvasLayer" parent="." unique_id=999999001]
+script = ExtResource("6_title")
+
+[node name="TitlePanel" type="PanelContainer" parent="TitleScreen" unique_id=999999002]
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 150.0
+offset_bottom = 570.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_panel")
+
+[node name="TitleLabel" type="Label" parent="TitleScreen/TitlePanel" unique_id=999999003]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 48
+text = "冒险者酒馆"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="TitleScreen/TitlePanel" unique_id=999999004]
+layout_mode = 2
+offset_top = 70.0
+theme_override_colors/font_color = Color(0.7, 0.7, 0.6, 1)
+theme_override_font_sizes/font_size = 18
+text = "模拟经营 · 肉鸽 · 建造"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NewGameButton" type="Button" parent="TitleScreen/TitlePanel" unique_id=999999005]
+layout_mode = 2
+offset_top = 130.0
+offset_bottom = 190.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_colors/font_hover_color = Color(1, 1, 0.6, 1)
+text = "开始新游戏"
+
+[node name="LoadGameButton" type="Button" parent="TitleScreen/TitlePanel" unique_id=999999006]
+layout_mode = 2
+offset_top = 200.0
+offset_bottom = 260.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_colors/font_hover_color = Color(1, 1, 0.6, 1)
+text = "继续游戏"
+
+[node name="CreditsButton" type="Button" parent="TitleScreen/TitlePanel" unique_id=999999007]
+layout_mode = 2
+offset_top = 270.0
+offset_bottom = 330.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_colors/font_hover_color = Color(1, 1, 0.6, 1)
+text = "游戏信息"
+
+[node name="VersionLabel" type="Label" parent="TitleScreen/TitlePanel" unique_id=999999008]
+layout_mode = 2
+offset_top = 380.0
+theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
+theme_override_font_sizes/font_size = 12
+text = "v0.4.0 - Alpha"
+horizontal_alignment = 1
+
+[node name="GameOverScreen" type="CanvasLayer" parent="." unique_id=999999010]
+script = ExtResource("7_gameover")
+
+[node name="GameOverPanel" type="PanelContainer" parent="GameOverScreen" unique_id=999999011]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -200.0
+offset_right = 250.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_panel")
+
+[node name="GameOverLabel" type="Label" parent="GameOverScreen/GameOverPanel" unique_id=999999012]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 36
+text = "游戏结束"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ReasonLabel" type="Label" parent="GameOverScreen/GameOverPanel" unique_id=999999013]
+layout_mode = 2
+offset_top = 60.0
+theme_override_colors/font_color = Color(0.9, 0.7, 0.4, 1)
+theme_override_font_sizes/font_size = 22
+text = "金币耗尽!"
+horizontal_alignment = 1
+
+[node name="StatsLabel" type="Label" parent="GameOverScreen/GameOverPanel" unique_id=999999014]
+layout_mode = 2
+offset_top = 110.0
+offset_bottom = 280.0
+theme_override_colors/font_color = Color(0.8, 0.8, 0.7, 1)
+theme_override_font_sizes/font_size = 16
+text = "存活天数: 0 天"
+vertical_alignment = 1
+
+[node name="RestartButton" type="Button" parent="GameOverScreen/GameOverPanel" unique_id=999999015]
+layout_mode = 2
+offset_top = 300.0
+offset_bottom = 350.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_colors/font_hover_color = Color(1, 1, 0.6, 1)
+text = "重新开始"
+
+[node name="QuitButton" type="Button" parent="GameOverScreen/GameOverPanel" unique_id=999999016]
+layout_mode = 2
+offset_top = 360.0
+offset_bottom = 410.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_colors/font_hover_color = Color(1, 1, 0.6, 1)
+text = "返回标题"
+
+
 [node name="GameManager" type="Node" parent="." unique_id=1713004855]
 script = ExtResource("3_game")
 
 [node name="AudioManager" type="Node" parent="." unique_id=517594691]
 script = ExtResource("4_audio")
 
+[node name="AchievementManager" type="Node" parent="." unique_id=123456789]
+script = ExtResource("5_ach")
+
+[node name="StaffManager" type="Node" parent="." unique_id=987654321]
+script = ExtResource("8_staff")
+
+[node name="TutorialManager" type="CanvasLayer" parent="." unique_id=888888881]
+script = ExtResource("9_tutorial")
+
 [node name="UI" type="CanvasLayer" parent="." unique_id=805223181]
+layer = -1
 script = ExtResource("2_ui")
 
 [node name="ResourcePanel" type="PanelContainer" parent="UI" unique_id=2128395647]
@@ -204,6 +339,14 @@ text = "💾 保存游戏"
 layout_mode = 2
 text = "📂 读取游戏"
 
+[node name="AchievementButton" type="Button" parent="UI/BuildPanel" unique_id=999999991]
+layout_mode = 2
+text = "🏆 成就"
+
+[node name="StaffButton" type="Button" parent="UI/BuildPanel" unique_id=999999992]
+layout_mode = 2
+text = "👥 员工"
+
 [node name="NextDayButton" type="Button" parent="UI" unique_id=1135190534]
 offset_left = 1100.0
 offset_top = 620.0
@@ -284,6 +427,20 @@ text = "关闭"
 [connection signal="pressed" from="UI/BuildPanel/CancelBuild" to="UI" method="_on_cancel_build_pressed"]
 [connection signal="pressed" from="UI/BuildPanel/SaveButton" to="UI" method="_on_save_button_pressed"]
 [connection signal="pressed" from="UI/BuildPanel/LoadButton" to="UI" method="_on_load_button_pressed"]
+[connection signal="pressed" from="UI/BuildPanel/AchievementButton" to="UI" method="_on_achievement_button_pressed"]
+[connection signal="pressed" from="UI/BuildPanel/StaffButton" to="UI" method="_on_staff_button_pressed"]
 [connection signal="pressed" from="UI/NextDayButton" to="UI" method="_on_next_day_pressed"]
 [connection signal="pressed" from="UI/GuestDetailPanel/ServeButton" to="UI" method="_on_serve_button_pressed"]
 [connection signal="pressed" from="UI/GuestDetailPanel/CloseDetailButton" to="UI" method="_on_close_guest_detail_pressed"]
+
+[connection signal="new_game_started" from="TitleScreen" to="." method="_on_title_new_game"]
+[connection signal="load_game_requested" from="TitleScreen" to="." method="_on_title_load_game"]
+[connection signal="restart_requested" from="GameOverScreen" to="." method="_on_game_over_restart"]
+[connection signal="quit_to_title_requested" from="GameOverScreen" to="." method="_on_game_over_quit"]
+[connection signal="pressed" from="TitleScreen/TitlePanel/NewGameButton" to="TitleScreen" method="_on_new_game_button_pressed"]
+[connection signal="pressed" from="TitleScreen/TitlePanel/LoadGameButton" to="TitleScreen" method="_on_load_game_button_pressed"]
+[connection signal="pressed" from="TitleScreen/TitlePanel/CreditsButton" to="TitleScreen" method="_on_credits_button_pressed"]
+[connection signal="pressed" from="GameOverScreen/GameOverPanel/RestartButton" to="GameOverScreen" method="_on_restart_button_pressed"]
+[connection signal="pressed" from="GameOverScreen/GameOverPanel/QuitButton" to="GameOverScreen" method="_on_quit_button_pressed"]
+[connection signal="game_over" from="GameManager" to="GameOverScreen" method="show_game_over"]
+

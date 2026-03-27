@@ -27,14 +27,22 @@ var current_message: String = ""
 var message_timer: float = 0.0
 var build_mode: bool = false
 var current_guest_id: int = -1
+var tutorial: Node = null
 
 func _ready() -> void:
+	# Get tutorial reference
+	tutorial = get_node_or_null("/root/Main/TutorialManager")
 	_update_visibility()
 	event_panel.visible = false
-	build_panel.visible = false
+	build_panel.visible = true  # 建造面板默认显示
 	guest_panel.visible = false
 	card_panel.visible = false
 	guest_detail_panel.visible = false
+	
+	# 确保资源面板可见
+	var resource_panel: PanelContainer = $ResourcePanel
+	if resource_panel:
+		resource_panel.visible = true
 
 func _process(delta: float) -> void:
 	if message_timer > 0:
@@ -43,10 +51,10 @@ func _process(delta: float) -> void:
 			message_label.text = ""
 
 func update_resources(gold: int, reputation: int, ingredients: int, fuel: int) -> void:
-	gold_label.text = str(gold)
-	rep_label.text = str(reputation)
-	ing_label.text = str(ingredients)
-	fuel_label.text = str(fuel)
+	gold_label.text = "💰 " + str(gold)
+	rep_label.text = "⭐ " + str(reputation)
+	ing_label.text = "🥬 " + str(ingredients)
+	fuel_label.text = "🔥 " + str(fuel)
 	
 	# 资源警告：当资源过低时显示醒目颜色
 	var warn_color: Color = Color(1.0, 0.3, 0.3)
@@ -244,12 +252,18 @@ func set_build_mode(enabled: bool) -> void:
 		cancel_btn.visible = enabled
 
 func _on_card_button_pressed(card_index: int) -> void:
+	# Notify tutorial that card was selected
+	if tutorial and tutorial.has_method("notify_card_selected"):
+		tutorial.notify_card_selected()
 	emit_signal("card_selected", card_index)
 
 func _update_visibility() -> void:
 	pass
 
 func _on_table_pressed() -> void:
+	# Notify tutorial that build mode is being entered
+	if tutorial and tutorial.has_method("notify_build_mode_entered"):
+		tutorial.notify_build_mode_entered()
 	emit_signal("build_requested", "table")
 
 func _on_barrel_pressed() -> void:
@@ -265,6 +279,13 @@ func _on_bedroom_pressed() -> void:
 	emit_signal("build_requested", "bedroom")
 
 func _on_next_day_pressed() -> void:
+	# 检查游戏是否已启动（防止标题画面时点击）
+	var game_mgr = get_node_or_null("/root/Main/GameManager")
+	if game_mgr and not game_mgr.game_started:
+		return
+	# Notify tutorial
+	if tutorial and tutorial.has_method("notify_next_day"):
+		tutorial.notify_next_day()
 	emit_signal("next_day_requested")
 
 func _on_cancel_build_pressed() -> void:
@@ -276,6 +297,9 @@ func _on_cancel_build_pressed() -> void:
 
 func _on_serve_button_pressed() -> void:
 	if current_guest_id != -1:
+		# Notify tutorial that guest is being served
+		if tutorial and tutorial.has_method("notify_guest_served"):
+			tutorial.notify_guest_served()
 		emit_signal("guest_selected", current_guest_id)
 
 func _on_close_guest_detail_pressed() -> void:
@@ -286,3 +310,21 @@ func _on_save_button_pressed() -> void:
 
 func _on_load_button_pressed() -> void:
 	emit_signal("load_requested")
+
+func _on_achievement_button_pressed() -> void:
+	# 显示成就面板
+	var achievement_manager: Node = get_node_or_null("/root/Main/AchievementManager")
+	if achievement_manager and achievement_manager.has_method("show_achievement_panel"):
+		achievement_manager.show_achievement_panel()
+
+func _on_staff_button_pressed() -> void:
+	# 检查游戏是否已启动（防止标题画面时点击）
+	var game_mgr = get_node_or_null("/root/Main/GameManager")
+	if game_mgr and not game_mgr.game_started:
+		return
+	# 显示员工面板
+	var staff_manager: Node = get_node_or_null("/root/Main/StaffManager")
+	if staff_manager and staff_manager.has_method("create_staff_panel"):
+		var panel: Control = staff_manager.create_staff_panel()
+		# 添加到当前场景根节点
+		get_tree().root.add_child(panel)

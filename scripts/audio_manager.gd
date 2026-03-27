@@ -16,6 +16,9 @@ var current_bgm: String = ""
 var sfx_players: Array = []
 const SFX_POOL_SIZE: int = 4
 
+# 环境音乐生成器
+var ambient_music: Node = null
+
 # 背景音乐资源路径
 const BGM_PATHS: Dictionary = {
 	"tavern": "res://assets/audio/bgm/tavern_theme.ogg",
@@ -48,6 +51,11 @@ func _initialize_audio() -> void:
 	bgm_player.volume_db = linear_to_db(bgm_volume * master_volume)
 	add_child(bgm_player)
 	
+	# 创建环境音乐生成器
+	ambient_music = Node.new()
+	ambient_music.name = "AmbientMusic"
+	add_child(ambient_music)
+	
 	# 创建音效播放器池
 	for i in range(SFX_POOL_SIZE):
 		var player: AudioStreamPlayer = AudioStreamPlayer.new()
@@ -67,15 +75,24 @@ func _get_available_sfx_player() -> AudioStreamPlayer:
 
 func play_bgm(bgm_name: String, fade_in: bool = true) -> void:
 	"""播放背景音乐"""
+	# 如果正在播放环境音乐，先停止
+	if ambient_music and ambient_music.has_method("get_is_playing") and ambient_music.get_is_playing():
+		ambient_music.stop()
+	
 	if not BGM_PATHS.has(bgm_name):
+		# 尝试使用环境音乐作为通用背景
+		_start_ambient_music()
 		return
 	
 	var path: String = BGM_PATHS[bgm_name]
 	if not ResourceLoader.exists(path):
+		# 文件不存在，使用程序化环境音乐
+		_start_ambient_music()
 		return
 	
 	var stream: AudioStream = load(path)
 	if stream == null:
+		_start_ambient_music()
 		return
 	
 	bgm_player.stream = stream
@@ -86,6 +103,40 @@ func play_bgm(bgm_name: String, fade_in: bool = true) -> void:
 	
 	if fade_in:
 		_fade_in_bgm()
+
+func _start_ambient_music() -> void:
+	"""启动程序化环境音乐"""
+	if ambient_music == null:
+		return
+	
+	# 检查是否已经有生成的脚本
+	var script_path: String = "res://scripts/ambient_music.gd"
+	if not ResourceLoader.exists(script_path):
+		print("[AudioManager] Ambient music script not found!")
+		return
+	
+	var ambient_script: GDScript = load(script_path)
+	if ambient_script == null:
+		print("[AudioManager] Failed to load ambient music script!")
+		return
+	
+	# 创建环境音乐节点
+	var ambient_node: Node = Node.new()
+	ambient_node.set_script(ambient_script)
+	ambient_node.name = "AmbientMusicInstance"
+	
+	# 替换旧的 ambient_music 引用
+	remove_child(ambient_music)
+	ambient_music.queue_free()
+	ambient_music = ambient_node
+	add_child(ambient_node)
+	
+	# 播放环境音乐
+	if ambient_node.has_method("play"):
+		ambient_node.play()
+		bgm_playing = true
+		current_bgm = "ambient"
+		print("[AudioManager] Playing procedural ambient music")
 
 func _fade_in_bgm() -> void:
 	"""背景音乐淡入"""
@@ -101,6 +152,10 @@ func stop_bgm(fade_out: bool = true) -> void:
 	"""停止背景音乐"""
 	if not bgm_playing:
 		return
+	
+	# 停止环境音乐
+	if ambient_music and ambient_music.has_method("stop"):
+		ambient_music.stop()
 	
 	if fade_out:
 		await _fade_out_bgm()
@@ -307,6 +362,9 @@ func set_master_volume(vol: float) -> void:
 func set_bgm_volume(vol: float) -> void:
 	bgm_volume = clamp(vol, 0.0, 1.0)
 	bgm_player.volume_db = linear_to_db(bgm_volume * master_volume)
+	# 同时设置环境音乐音量
+	if ambient_music and ambient_music.has_method("set_volume"):
+		ambient_music.set_volume(bgm_volume)
 
 func set_sfx_volume(vol: float) -> void:
 	sfx_volume = clamp(vol, 0.0, 1.0)
@@ -319,7 +377,15 @@ func _update_volumes() -> void:
 		player.volume_db = linear_to_db(sfx_volume * master_volume)
 
 func is_bgm_playing() -> bool:
-	return bgm_playing
+	if bgm_playing:
+		return true
+	if ambient_music and ambient_music.has_method("get_is_playing"):
+		return ambient_music.get_is_playing()
+	return false
 
 func get_current_bgm() -> String:
+	if current_bgm != "":
+		return current_bgm
+	if ambient_music and ambient_music.has_method("get_is_playing") and ambient_music.get_is_playing():
+		return "ambient"
 	return current_bgm
