@@ -83,6 +83,14 @@ func _on_title_new_game_started() -> void:
 	total_gold_earned = 0
 	max_reputation = 50
 	
+	# Hide title screen
+	var title_screen: CanvasLayer = get_node_or_null("/root/Main/TitleScreen")
+	if title_screen:
+		title_screen.visible = false
+		print("[GameManager] Title screen hidden")
+	else:
+		print("[GameManager] ERROR: Title screen not found!")
+	
 	is_running = true
 	game_started = true
 	
@@ -112,6 +120,11 @@ func _on_title_load_game_requested() -> void:
 	"""Title screen: load game clicked"""
 	print("[GameManager] Title: Load game requested")
 	total_gold_earned = 0
+	
+	# Hide title screen
+	var title_screen: Node = get_node_or_null("/root/Main/TitleScreen")
+	if title_screen:
+		title_screen.visible = false
 	
 	is_running = true
 	game_started = true

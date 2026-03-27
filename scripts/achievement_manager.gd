@@ -5,6 +5,12 @@ extends Node
 signal achievement_unlocked(achievement_id: String, achievement_name: String)
 signal stat_updated(stat_name: String, new_value: int)
 
+# Visual effects reference
+var visual_effects: Node = null
+
+func _ready() -> void:
+	visual_effects = get_node_or_null("/root/Main/VisualEffects")
+
 # 成就定义
 const ACHIEVEMENTS: Array = [
 	# 开业成就
@@ -437,6 +443,26 @@ func _check_achievements_for_flag(flag_name: String) -> void:
 			_unlock_achievement(ach)
 
 func _unlock_achievement(achievement: Dictionary) -> void:
+	"""解锁成就"""
+	var ach_id: String = achievement.get("id", "")
+	if ach_id in unlocked_achievements:
+		return
+	
+	unlocked_achievements.append(ach_id)
+	emit_signal("achievement_unlocked", ach_id, achievement.get("name", ""))
+	
+	# 播放成就解锁粒子效果
+	if visual_effects and visual_effects.has_method("play_particle"):
+		var center_pos: Vector2 = Vector2(640, 360)  # 屏幕中心
+		visual_effects.play_particle("achievement", center_pos, get_tree().root)
+	
+	# 屏幕闪烁效果
+	if visual_effects and visual_effects.has_method("color_tint"):
+		visual_effects.color_tint(Color(1, 0.9, 0.5, 0.3), 0.5)
+	
+	_update_achievement_display()
+	
+	print("[Achievement] 🏆 成就解锁：%s - %s" % [ach_id, achievement.get("name", "")])
 	"""解锁成就"""
 	var ach_id: String = achievement.get("id", "")
 	if ach_id in unlocked_achievements:

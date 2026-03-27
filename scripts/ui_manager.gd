@@ -28,10 +28,12 @@ var message_timer: float = 0.0
 var build_mode: bool = false
 var current_guest_id: int = -1
 var tutorial: Node = null
+var visual_effects: Node = null
 
 func _ready() -> void:
 	# Get tutorial reference
 	tutorial = get_node_or_null("/root/Main/TutorialManager")
+	visual_effects = get_node_or_null("/root/Main/VisualEffects")
 	_update_visibility()
 	event_panel.visible = false
 	build_panel.visible = true  # 建造面板默认显示
@@ -141,6 +143,9 @@ func show_guest_detail(guest: Dictionary) -> void:
 	"""显示客人详情面板"""
 	current_guest_id = int(guest.get("id", -1))
 	guest_detail_panel.visible = true
+	# 面板弹出动画
+	if visual_effects and visual_effects.has_method("animate_panel_popup"):
+		visual_effects.animate_panel_popup(guest_detail_panel)
 	
 	var guest_type: String = guest.get("type", "common")
 	var order: Dictionary = guest.get("order", {})
@@ -177,6 +182,9 @@ func hide_guest_detail() -> void:
 
 func show_card_selection(cards: Array) -> void:
 	card_panel.visible = true
+	# 面板弹出动画
+	if visual_effects and visual_effects.has_method("animate_panel_popup"):
+		visual_effects.animate_panel_popup(card_panel)
 	
 	# 清除旧的卡牌按钮
 	for child in card_panel.get_children():
@@ -261,21 +269,32 @@ func _update_visibility() -> void:
 	pass
 
 func _on_table_pressed() -> void:
+	# 按钮点击动画
+	if visual_effects and visual_effects.has_method("animate_button"):
+		visual_effects.animate_button($BuildPanel/Table)
 	# Notify tutorial that build mode is being entered
 	if tutorial and tutorial.has_method("notify_build_mode_entered"):
 		tutorial.notify_build_mode_entered()
 	emit_signal("build_requested", "table")
 
 func _on_barrel_pressed() -> void:
+	if visual_effects and visual_effects.has_method("animate_button"):
+		visual_effects.animate_button($BuildPanel/Barrel)
 	emit_signal("build_requested", "barrel")
 
 func _on_fireplace_pressed() -> void:
+	if visual_effects and visual_effects.has_method("animate_button"):
+		visual_effects.animate_button($BuildPanel/Fireplace)
 	emit_signal("build_requested", "fireplace")
 
 func _on_kitchen_pressed() -> void:
+	if visual_effects and visual_effects.has_method("animate_button"):
+		visual_effects.animate_button($BuildPanel/Kitchen)
 	emit_signal("build_requested", "kitchen")
 
 func _on_bedroom_pressed() -> void:
+	if visual_effects and visual_effects.has_method("animate_button"):
+		visual_effects.animate_button($BuildPanel/Bedroom)
 	emit_signal("build_requested", "bedroom")
 
 func _on_next_day_pressed() -> void:
@@ -283,6 +302,9 @@ func _on_next_day_pressed() -> void:
 	var game_mgr = get_node_or_null("/root/Main/GameManager")
 	if game_mgr and not game_mgr.game_started:
 		return
+	# 按钮点击动画
+	if visual_effects and visual_effects.has_method("animate_button"):
+		visual_effects.animate_button($NextDayButton)
 	# Notify tutorial
 	if tutorial and tutorial.has_method("notify_next_day"):
 		tutorial.notify_next_day()
@@ -306,12 +328,18 @@ func _on_close_guest_detail_pressed() -> void:
 	hide_guest_detail()
 
 func _on_save_button_pressed() -> void:
+	if visual_effects and visual_effects.has_method("animate_button"):
+		visual_effects.animate_button($BuildPanel/SaveButton)
 	emit_signal("save_requested")
 
 func _on_load_button_pressed() -> void:
+	if visual_effects and visual_effects.has_method("animate_button"):
+		visual_effects.animate_button($BuildPanel/LoadButton)
 	emit_signal("load_requested")
 
 func _on_achievement_button_pressed() -> void:
+	if visual_effects and visual_effects.has_method("animate_button"):
+		visual_effects.animate_button($BuildPanel/AchievementButton)
 	# 显示成就面板
 	var achievement_manager: Node = get_node_or_null("/root/Main/AchievementManager")
 	if achievement_manager and achievement_manager.has_method("show_achievement_panel"):
@@ -322,6 +350,8 @@ func _on_staff_button_pressed() -> void:
 	var game_mgr = get_node_or_null("/root/Main/GameManager")
 	if game_mgr and not game_mgr.game_started:
 		return
+	if visual_effects and visual_effects.has_method("animate_button"):
+		visual_effects.animate_button($BuildPanel/StaffButton)
 	# 显示员工面板
 	var staff_manager: Node = get_node_or_null("/root/Main/StaffManager")
 	if staff_manager and staff_manager.has_method("create_staff_panel"):

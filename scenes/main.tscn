@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://dyxne5g88ae6x" path="res://scripts/game_over_screen.gd" id="7_gameover"]
 [ext_resource type="Script" uid="uid://drff3ekhv0gul" path="res://scripts/staff_manager.gd" id="8_staff"]
 [ext_resource type="Script" path="res://scripts/tutorial_manager.gd" id="9_tutorial"]
+[ext_resource type="Script" path="res://scripts/visual_effects.gd" id="10_visual"]
 
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
@@ -75,6 +76,7 @@ corner_radius_bottom_left = 10
 script = ExtResource("1_tavern")
 
 [node name="TitleScreen" type="CanvasLayer" parent="." unique_id=999999001]
+visible = false
 script = ExtResource("6_title")
 
 [node name="TitlePanel" type="PanelContainer" parent="TitleScreen" unique_id=999999002]
@@ -207,6 +209,9 @@ script = ExtResource("8_staff")
 
 [node name="TutorialManager" type="CanvasLayer" parent="." unique_id=888888881]
 script = ExtResource("9_tutorial")
+
+[node name="VisualEffects" type="Node" parent="." unique_id=777777771]
+script = ExtResource("10_visual")
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=805223181]
 layer = -1
@@ -376,6 +381,7 @@ offset_left = 231.0
 offset_top = 162.0
 offset_right = 1031.0
 offset_bottom = 562.0
+visible = false
 theme_override_styles/panel = SubResource("StyleBoxFlat_card_panel")
 
 [node name="CardTitle" type="Label" parent="UI/CardPanel" unique_id=965699648]

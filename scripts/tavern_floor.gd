@@ -46,6 +46,9 @@ var hovered_cell: Vector2i = Vector2i(-1, -1)
 # Tutorial reference
 var tutorial: Node = null
 
+# Visual effects reference
+var visual_effects: Node = null
+
 # 肉鸽卡牌定义
 const ROGUELIKE_CARDS: Array = [
 	# Common - 资源获取
@@ -154,6 +157,7 @@ const FACILITY_INCOME: Dictionary = {
 
 func _ready() -> void:
 	tutorial = get_node_or_null("/root/Main/TutorialManager")
+	visual_effects = get_node_or_null("/root/Main/VisualEffects")
 	_initialize_grid()
 	_update_ui()
 
@@ -200,14 +204,24 @@ func build_facility(col: int, row: int, facility_type: String) -> bool:
 	_update_ui()
 	emit_signal("resource_changed", "gold", gold, gold + cost)
 	
-	# Notify tutorial that facility was placed
-	if tutorial and tutorial.has_method("notify_facility_placed"):
-		tutorial.notify_facility_placed()
-	
 	# 播放建造音效
 	var audio: Node = get_node_or_null("/root/Main/AudioManager")
 	if audio and audio.has_method("play_sfx"):
 		audio.play_sfx("build")
+	
+	# 播放建造粒子效果
+	if visual_effects and visual_effects.has_method("play_particle"):
+		var cell_pos: Vector2 = Vector2(col * GRID_SIZE + GRID_OFFSET_X + GRID_SIZE/2, row * GRID_SIZE + GRID_OFFSET_Y + GRID_SIZE/2)
+		visual_effects.play_particle("build_complete", cell_pos, self)
+	
+	# 显示资源变化浮动文字
+	if visual_effects and visual_effects.has_method("show_resource_change"):
+		var cell_pos: Vector2 = Vector2(col * GRID_SIZE + GRID_OFFSET_X + GRID_SIZE/2, row * GRID_SIZE + GRID_OFFSET_Y)
+		visual_effects.show_resource_change("gold", -cost, cell_pos, self)
+	
+	# Notify tutorial that facility was placed
+	if tutorial and tutorial.has_method("notify_facility_placed"):
+		tutorial.notify_facility_placed()
 	
 	# 更新设施建造成就
 	var achievements: Node = get_node_or_null("/root/Main/AchievementManager")
@@ -308,7 +322,7 @@ func _process(_delta: float) -> void:
 	queue_redraw()
 
 # 网格偏移 - 避开左上角 UI 面板
-const GRID_OFFSET_X: int = 300
+const GRID_OFFSET_X: int = 20
 const GRID_OFFSET_Y: int = 200
 
 func _draw() -> void:
@@ -543,6 +557,7 @@ func checkout_guest(guest_id: int) -> int:
 		if active_guests[i]["id"] == guest_id:
 			var guest: Dictionary = active_guests[i]
 			var payment: int = _calculate_payment(guest)
+			var guest_pos: Vector2 = guest.get("position", Vector2.ZERO)
 			active_guests.remove_at(i)
 			guests_served_today += 1
 			income_today += payment
@@ -550,6 +565,17 @@ func checkout_guest(guest_id: int) -> int:
 			# 声誉小幅提升（基础值，不在 checkout 里重复加）
 			emit_signal("guest_left", guest_id)
 			emit_signal("resource_changed", "gold", gold, gold - payment)
+			
+			# 播放金币获得效果
+			if visual_effects and visual_effects.has_method("play_particle"):
+				var screen_pos: Vector2 = guest_pos + Vector2(GRID_OFFSET_X + GRID_SIZE/2, GRID_OFFSET_Y + GRID_SIZE/2)
+				visual_effects.play_particle("coin_spark", screen_pos, self)
+			
+			# 显示金币浮动文字
+			if visual_effects and visual_effects.has_method("show_floating_text"):
+				var screen_pos: Vector2 = guest_pos + Vector2(GRID_OFFSET_X + GRID_SIZE/2, GRID_OFFSET_Y)
+				visual_effects.show_floating_text("+%d💰" % payment, screen_pos, self, Color.GOLD, 24)
+			
 			return payment
 	return 0
 
@@ -636,6 +662,11 @@ func advance_day() -> void:
 	var audio: Node = get_node_or_null("/root/Main/AudioManager")
 	if audio and audio.has_method("play_sfx"):
 		audio.play_sfx("day_change")
+	
+	# 播放日期变化粒子效果
+	if visual_effects and visual_effects.has_method("play_particle"):
+		var center_pos: Vector2 = Vector2(GRID_OFFSET_X + GRID_COLS * GRID_SIZE / 2, GRID_OFFSET_Y + GRID_ROWS * GRID_SIZE / 2)
+		visual_effects.play_particle("card_select", center_pos, self)
 	
 	# 消耗资源（日常运营成本）
 	# 壁炉减少燃料消耗

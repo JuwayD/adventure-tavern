@@ -18,10 +18,9 @@ var _showing_credits: bool = false
 func _ready() -> void:
 	_update_load_button()
 	
-	# 淡入效果
-	var tween: Tween = create_tween()
-	title_panel.modulate = Color(1, 1, 1, 0)
-	tween.tween_property(title_panel, "modulate", Color(1, 1, 1, 1), 1.0)
+	# 默认隐藏标题画面
+	# GameManager 会在需要时调用 show_title() 显示
+	visible = false
 
 func _update_load_button() -> void:
 	var save_path: String = "user://save_game.dat"
