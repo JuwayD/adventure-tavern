@@ -18,9 +18,8 @@ var _showing_credits: bool = false
 func _ready() -> void:
 	_update_load_button()
 	
-	# 默认隐藏标题画面
-	# GameManager 会在需要时调用 show_title() 显示
-	visible = false
+	# 直接隐藏整个标题画面层
+	self.visible = false
 
 func _update_load_button() -> void:
 	var save_path: String = "user://save_game.dat"

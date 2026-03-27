@@ -158,6 +158,12 @@ const FACILITY_INCOME: Dictionary = {
 func _ready() -> void:
 	tutorial = get_node_or_null("/root/Main/TutorialManager")
 	visual_effects = get_node_or_null("/root/Main/VisualEffects")
+	
+	# 直接按 F5 运行时，隐藏标题画面
+	var title_screen: CanvasLayer = get_node_or_null("/root/Main/TitleScreen")
+	if title_screen:
+		title_screen.visible = false
+	
 	_initialize_grid()
 	_update_ui()
 
